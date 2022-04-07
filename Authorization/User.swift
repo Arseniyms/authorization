@@ -20,7 +20,6 @@ struct User: Codable {
             return ("Failed to encode \(self.login)")
             
         }
-        let returnMessage = "Fail"
 
         if let url = URL(string: apiurl + "user/sign-up") {
             var request = URLRequest(url: url)
@@ -34,11 +33,36 @@ struct User: Codable {
                 }
                 
             } catch {
-                return "Checkout failed"
+                return "Sign up failed for \(login)"
             }
         }
         
-        return returnMessage
+        return "Sign up failed for \(login)"
         
+    }
+    
+    func signIn() async -> String {
+        guard let encoded = try? JSONEncoder().encode(self) else {
+            return "Failed to encode \(login)"
+        }
+        
+        if let url = URL(string: apiurl + "user/sign-in") {
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpMethod = "POST"
+            
+            do {
+                let(_, response) = try await URLSession.shared.upload(for: request, from: encoded)
+                
+                if let response = response as? HTTPURLResponse {
+                    return String(response.statusCode)
+                }
+            } catch {
+                return "Sign in failed for \(login)"
+            }
+            
+        }
+        
+        return "Sign in failed for \(login)"
     }
 }
