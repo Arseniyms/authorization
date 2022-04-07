@@ -8,16 +8,19 @@
 import SwiftUI
 
 struct SecureFieldView: View {
+    var title = ""
     @Binding var text: String
+    var textColor: Color = .textColor
     @State private var isShowingPass = false
     
     var body: some View {
         HStack {
             if isShowingPass {
-                TextField("",text: $text)
+                TextField(title,text: $text)
+                    .foregroundColor(textColor)
                     .keyboardType(.default)
             } else {
-                SecureField("", text: $text)
+                SecureField(title, text: $text)
                     .keyboardType(.default)
             }
             Button {
@@ -33,6 +36,6 @@ struct SecureFieldView: View {
 struct SecureFieldView_Previews: PreviewProvider {
     @State static var text = ""
     static var previews: some View {
-        SecureFieldView(text: $text)
+        SecureFieldView(text: $text, textColor: .red)
     }
 }

@@ -30,6 +30,10 @@ import SwiftUI
 //    }
 //}
 
+func dividedColor(red: Double, green: Double, blue: Double) -> Color {
+    Color(red: red / 255, green: green / 255, blue: blue / 255)
+}
+
 extension ShapeStyle where Self == Color {
     static var textColor: Color {
         Color(red: 238 / 255, green: 238 / 255, blue: 238 / 255)
@@ -44,6 +48,14 @@ extension ShapeStyle where Self == Color {
     }
     static var darkShadow : Color {
         Color(red: 163 / 255, green: 177 / 255, blue: 198 / 255)
+    }
+    
+    static var buttonColor : Color {
+        dividedColor(red: 65, green: 51, blue: 188)
+    }
+    
+    static var wrongPassword: Color {
+        dividedColor(red: 255, green: 46, blue: 99)
     }
     
 }

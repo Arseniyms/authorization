@@ -7,33 +7,13 @@
 
 import SwiftUI
 
-func myDivider() -> some View {
-    Rectangle()
-        .frame(height: 1)
-        .opacity(0.4)
-}
-
-struct neumorphic: ButtonStyle {
-    var color: Color
-    
-    func makeBody(configuration: Self.Configuration) -> some View {
-        configuration.label
-            .padding(.horizontal,30)
-            .padding(20)
-            .background(Color.backgroundColor)
-            .cornerRadius(20)
-            .shadow(color: Color.darkShadow, radius: 3, x: 2, y: 2)
-            .shadow(color: Color.lightShadow, radius: 3, x: -2, y: -2)
-            .scaleEffect(configuration.isPressed ? 0.9 : 1.0)
-    }
-}
 
 struct ContentView: View {
     @State private var login = ""
     @State private var password = ""
     
-    @State private var isShowingSignUpAvtorization = false
-    @State private var signUpMessage = ""
+    @State private var isShowingSignInAvtorization = false
+    @State private var signInMessage = ""
     
     var body: some View {
         NavigationView {
@@ -41,21 +21,36 @@ struct ContentView: View {
                 Color.backgroundColor
                     .ignoresSafeArea()
                 VStack(alignment: .center) {
-                    Spacer()
-                    Spacer()
-                    Spacer()
                     
-                    VStack(alignment: .center, spacing: 10) {
+                    
+                    VStack(spacing: 10) {
+                        Spacer()
+                        Spacer()
                         VStack(alignment: .leading) {
                             Text("Login")
                             TextField("", text: $login)
-                            myDivider()
+                            DividerView()
                         }
                         VStack(alignment: .leading) {
                             Text("Password")
                             SecureFieldView(text: $password)
-                            myDivider()
+                            DividerView()
                         }
+                        
+                        Spacer()
+                        Button {
+                            Task {
+                                signInMessage = await User(login: login, password: password).signIn()
+                                isShowingSignInAvtorization = true
+                            }
+                        } label: {
+                            ZStack {
+                                Text("Sign in")
+                                    .fontWeight(.bold)
+                            }
+                        }
+                        .buttonStyle(RoundedRectangleButtonStyle())
+                        Spacer()
                     }
                     .textInputAutocapitalization(.never)
                     .disableAutocorrection(true)
@@ -63,26 +58,6 @@ struct ContentView: View {
                     .padding(.horizontal, 50)
                     .foregroundColor(.textColor)
                     
-                    Spacer()
-                    
-                    Button {
-                        Task {
-                            signUpMessage = await User(login: login, password: password).signIn()
-                            isShowingSignUpAvtorization = true
-                        }
-                    } label: {
-                        ZStack {
-                            Text("Sign in")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                        }
-                    }
-                    .foregroundColor(.textColor)
-                    .buttonStyle(neumorphic(color: Color.backgroundColor))
-                    
-                    Spacer()
-                    Spacer()
-                
                     
                     HStack() {
                         VStack(alignment: .leading, spacing: 10) {
@@ -90,7 +65,7 @@ struct ContentView: View {
                                 .opacity(0.5)
                                 .padding(.horizontal)
                             NavigationLink {
-                                
+                                SignUpView()
                             } label: {
                                 Text("Sign up  >")
                                     .padding(.horizontal)
@@ -99,9 +74,8 @@ struct ContentView: View {
                         .foregroundColor(.textColor)
                         .font(.callout)
                         .padding()
-                        Spacer()
-                       
                         
+                        Spacer()
                     }
                     
                     Spacer()
@@ -109,10 +83,10 @@ struct ContentView: View {
             }
             .navigationTitle("Sign in")
             .navigationBarHidden(true)
-            .alert("Done", isPresented: $isShowingSignUpAvtorization) {
+            .alert("Done", isPresented: $isShowingSignInAvtorization) {
                 Button("OK") {}
             } message: {
-                Text(signUpMessage)
+                Text(signInMessage)
             }
         }
     }
