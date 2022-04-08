@@ -20,7 +20,7 @@ struct User: Codable {
             return ("Failed to encode \(self.login)")
             
         }
-
+        
         if let url = URL(string: apiurl + "user/sign-up") {
             var request = URLRequest(url: url)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -46,23 +46,69 @@ struct User: Codable {
             return "Failed to encode \(login)"
         }
         
+        var status: String = ""
+        
         if let url = URL(string: apiurl + "user/sign-in") {
             var request = URLRequest(url: url)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpMethod = "POST"
             
             do {
-                let(_, response) = try await URLSession.shared.upload(for: request, from: encoded)
-                
+                let(data, response) = try await URLSession.shared.upload(for: request, from: encoded)
                 if let response = response as? HTTPURLResponse {
-                    return String(response.statusCode)
+                    status = String(response.statusCode)
                 }
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    if let token = json["token"] as? String {
+                        return token
+                    }
+                }
+                return status
+                
             } catch {
-                return "Sign in failed for \(login)"
+                return status
             }
             
         }
         
-        return "Sign in failed for \(login)"
+        return status
     }
+}
+
+
+func checkToken(_ token: String) -> Bool {
+    
+    var temp = false
+    
+    if let url = URL(string: apiurl + "user/private".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!) {
+        var request = URLRequest(url: url)
+        request.setValue(token, forHTTPHeaderField: "token")
+        request.addValue("text/plain; charset=utf-8", forHTTPHeaderField: "Content-Type")
+        
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print(error)
+            }
+            
+            if let response = response as? HTTPURLResponse {
+                print("Response HTTP Status code: \(response.statusCode)")
+            }
+            
+            if let data = data, let dataString = String(data: data, encoding: .utf8) {
+                temp = true
+                semaphore.signal()
+                print("Response data string:\n \(dataString)")
+            }
+        }.resume()
+
+        semaphore.wait()
+        
+        return temp
+    }
+    return temp
+    
+    
 }

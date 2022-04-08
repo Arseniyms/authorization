@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var isShowingSignInAvtorization = false
     @State private var signInMessage = ""
     
+    @State private var trigger: Bool? = false
     var body: some View {
         NavigationView {
             ZStack {
@@ -38,10 +39,19 @@ struct ContentView: View {
                         }
                         
                         Spacer()
+                        
+                        NavigationLink(destination: MainPageView(token: signInMessage), tag: true, selection: $trigger) { }
+                                
+                        
                         Button {
                             Task {
                                 signInMessage = await User(login: login, password: password).signIn()
-                                isShowingSignInAvtorization = true
+                                let _ = print(signInMessage.count)
+                                if signInMessage.count != 3 {
+                                    trigger = true
+                                } else {
+                                    isShowingSignInAvtorization = true
+                                }
                             }
                         } label: {
                             ZStack {
@@ -50,6 +60,7 @@ struct ContentView: View {
                             }
                         }
                         .buttonStyle(RoundedRectangleButtonStyle())
+                        
                         Spacer()
                     }
                     .textInputAutocapitalization(.never)
